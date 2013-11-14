@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="AkinakCUFSearch" title="Custom User Field Search" version_string="1.5" version_id="5" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="Akinak_CustomUserFieldSearch_Listen" callback_method="load_class" active="1" description=""/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="Akinak_CustomUserFieldSearch_Listen" callback_method="load_class" active="1" description=""/>
+    <listener event_id="load_class_route_prefix" execute_order="10" callback_class="Akinak_CustomUserFieldSearch_Listen" callback_method="load_class" active="1" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <optiongroups>
+    <group group_id="CUF_search" display_order="555" debug_only="0"/>
+    <option option_id="useAutocomplete" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>true</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="CUF_search" display_order="1"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="any_custom_field" version_id="1" version_string="1.0"><![CDATA[Any Custom Field]]></phrase>
+    <phrase title="option_akinakCityList_explain" version_id="1" version_string="1.0"><![CDATA[Just list of city that autocomplete in personal details]]></phrase>
+    <phrase title="option_group_CUF_search" version_id="4" version_string="1.4"><![CDATA[Custom User Field search]]></phrase>
+    <phrase title="option_group_CUF_search_description" version_id="4" version_string="1.4"><![CDATA[Custom User Field search options]]></phrase>
+    <phrase title="option_useAutocomplete" version_id="4" version_string="1.4"><![CDATA[Enable Autocomplete]]></phrase>
+    <phrase title="option_useAutocomplete_explain" version_id="4" version_string="1.4"><![CDATA[Disable this if slow work.]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates>
+    <template title="akinak_cufsearch" version_id="3" version_string="1.3"><![CDATA[<xen:title>{xen:phrase find_member}</xen:title>
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link full:search}">{xen:phrase search}</xen:breadcrumb>
+</xen:navigation>
+<form action="{xen:link 'members/list'}" method="post" data-redirect="true" class="xenForm">
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_users">{xen:phrase username_is}:</label></dt>
+		<dd>
+			<input type="text" name="username" value="{$search.users}" class="textCtrl AutoComplete AcSingle" id="ctrl_users" />
+		</dd>
+	</dl>
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_users">{xen:phrase occupation}:</label></dt>
+		<dd>
+			<input type="text" name="occupation" value="" class="textCtrl" />
+		</dd>
+	</dl>
+	<dl class="ctrlUnit">
+			<dt><label for="ctrl_location">{xen:phrase location}:</label></dt>
+			<dd><input type="text" name="location" value="" class="textCtrl AutoComplete AcSingle" id="ctrl_location" data-acurl="{xen:link account/searchCity}"/></dd>
+	</dl>
+<fieldset>
+{xen:phrase custom_user_fields}
+<xen:foreach loop="{$customFields}" value="{$customFieldName}">
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_keywords">{$customFieldName.field_phrase}:</label></dt>
+		<dd>
+			<ul>
+				<li><input type="textbox" name={$customFieldName.field_id} value="" /></li>
+			</ul>
+		</dd>
+	</dl>
+</xen:foreach>
+</fieldset>
+<dl class="submitUnit">
+		<dt></dt>
+		<dd><input type="submit" value="{xen:phrase search}" accesskey="s" class="button primary" /></dd>
+	</dl>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<xen:sidebar>
+	<div class="section">
+		<form action="{xen:link members/list}" method="post" class="secondaryContent findMember">
+						<h3><a href="{xen:link /members/search}" title="{xen:phrase find_member}">{xen:phrase find_member}</a></h3>
+				
+			<input type="search" name="username" placeholder="{xen:phrase name}..." results="0" class="textCtrl AutoComplete" data-autoSubmit="true" />
+<input type="search" name="location" placeholder="{xen:phrase location}" results="0" class="textCtrl">
+<input type="search" name="any_custom_field" placeholder="{xen:phrase any_custom_field}" results="0" class="textCtrl">
+<br><input type="submit" value="{xen:phrase search}" accesskey="s" class="button primary" />
+			<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+		</form>
+	</div>
+	
+	<div class="section activeMembers">
+		<div class="secondaryContent avatarHeap">
+			<h3>{xen:phrase highest_posting_members}</h3>
+			
+			<ol>
+				<xen:foreach loop="$activeUsers" value="$user">
+					<li><xen:avatar user="$user" size="s" text="{$user.username} ({xen:number $user.message_count})" class="Tooltip" title="{$user.username}, {xen:phrase messages}: {xen:number $user.message_count}" /></li>
+				</xen:foreach>
+			</ol>
+		</div>
+	</div>
+	
+	<div class="section newestMembers">
+		<div class="secondaryContent avatarHeap">
+			<h3>{xen:phrase newest_members}</h3>
+			
+			<ol>
+				<xen:foreach loop="$latestUsers" value="$user">
+					<li><xen:avatar user="$user" size="s" text="{$user.username} ({xen:datetime $user.register_date})" class="Tooltip" title="{$user.username}, {xen:phrase joined}: {xen:datetime $user.register_date}" /></li>
+				</xen:foreach>
+			</ol>
+		</div>
+	</div>
+	
+	<xen:if is="{$xenOptions.facebookAppId} AND {$xenOptions.facebookFacepile}">
+		<xen:container var="$facebookSdk">1</xen:container>
+		<fb:facepile width="{xen:property sidebar.width}" size="small" colorscheme="{xen:property fbColorScheme}"></fb:facepile>
+	</xen:if>
+</xen:sidebar>]]></template>
+  </templates>
+  <bb_code_media_sites/>
+  <template_modifications>
+    <modification title="add links" template_title="custom_field_view" execute_order="10" modification_type="str_replace" callback_class="" callback_method="" description="" version_id="3" version_string="1.3" active="1">
+      <search_value><![CDATA[			<xen:else />
+				{xen:raw $field.fieldValueHtml}
+			</xen:if>]]></search_value>
+      <replace_value><![CDATA[			<xen:else />
+<xen:foreach loop="$field.extra_fields" value="$extra_field">
+   <a href="/members/list?some_field={$extra_field}&field_type={$field.field_id}">
+{$extra_field}</a>
+</xen:foreach>
+			</xen:if>]]></replace_value>
+    </modification>
+    <modification title="add Serach Criteria" template_title="member_list" execute_order="10" modification_type="str_replace" callback_class="" callback_method="" description="" version_id="2" version_string="1.2" active="1">
+      <search_value><![CDATA[<xen:description>{xen:phrase this_is_list_of_all_members_registered_at_x, 'board_title={$xenOptions.boardTitle}'}</xen:description>]]></search_value>
+      <replace_value><![CDATA[<xen:description>{xen:phrase this_is_list_of_all_members_registered_at_x, 'board_title={$xenOptions.boardTitle}'}</xen:description>
+<xen:description>{$search.search_query}</xen:description>]]></replace_value>
+    </modification>
+    <modification title="akinakCUFSearch" template_title="member_list" execute_order="10" modification_type="str_replace" callback_class="" callback_method="" description="Add link to Custom User Field Serach panel" version_id="2" version_string="1.2" active="1">
+      <search_value><![CDATA[	<div class="section">
+		<form action="{xen:link members}" method="post" class="secondaryContent findMember">
+			<h3><a href="{xen:link online}" title="{xen:phrase see_all_online_users}">{xen:phrase find_member}</a></h3>
+				
+			<input type="search" name="username" placeholder="{xen:phrase name}..." results="0" class="textCtrl AutoComplete" data-autoSubmit="true" />
+			<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+		</form>
+	</div>]]></search_value>
+      <replace_value><![CDATA[	<div class="section">	
+	<form action="{xen:link members/list}" method="post" class="secondaryContent findMember">
+						<h3><a href="{xen:link members/search}" title="{xen:phrase find_member}">{xen:phrase find_member}</a></h3>
+				
+			<input type="search" name="username" placeholder="{xen:phrase name}" results="0" class="textCtrl AutoComplete" data-autoSubmit="true" />
+<input type="search" name="location" placeholder="{xen:phrase location}" results="0" class="textCtrl">
+<input type="search" name="any_custom_field" placeholder="{xen:phrase any_custom_field}" results="0" class="textCtrl">
+<br><input type="submit" value="{xen:phrase search}" accesskey="s" class="button primary" />
+			<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+		</form>
+	</div>]]></replace_value>
+    </modification>
+    <modification title="akinakCUFSearch_account_personal_details" template_title="account_personal_details" execute_order="10" modification_type="str_replace" callback_class="" callback_method="" description="" version_id="4" version_string="1.4" active="1">
+      <search_value><![CDATA[		<dl class="ctrlUnit">
+			<dt><label for="ctrl_location">{xen:phrase location}:</label></dt>
+			<dd><input type="text" name="location" value="{$visitor.location}" id="ctrl_location" class="textCtrl OptOut" /></dd>
+		</dl>]]></search_value>
+      <replace_value><![CDATA[		<dl class="ctrlUnit">
+			<dt><label for="ctrl_location">{xen:phrase location}:</label></dt>
+			<dd><input type="text" name="location" value="{$visitor.location}" class="textCtrl AutoComplete AcSingle" id="ctrl_location" data-acurl="account/searchCity?type=location"/></dd>
+		</dl>]]></replace_value>
+    </modification>
+    <modification title="member_list_Nav_Sort" template_title="member_list" execute_order="10" modification_type="str_replace" callback_class="" callback_method="" description="" version_id="2" version_string="1.2" active="1">
+      <search_value><![CDATA[<xen:pagenav link="members" linkparams="{$pageNavParams}" page="{$page}" perpage="{$usersPerPage}" total="{$totalUsers}" />]]></search_value>
+      <replace_value><![CDATA[<xen:pagenav link="members/list" linkdata="{$search}" page="{$page}" perpage="{$usersPerPage}" total="{$totalUsers}" />]]></replace_value>
+    </modification>
+    <modification title="page" template_title="member_list" execute_order="12" modification_type="str_replace" callback_class="" callback_method="" description="" version_id="2" version_string="1.2" active="1">
+      <search_value><![CDATA[	<xen:pagenav link="members" page="{$page}" perpage="{$usersPerPage}" total="{$totalUsers}" />]]></search_value>
+      <replace_value><![CDATA[<xen:pagenav link="members/list" linkdata="{$search}" page="{$page}" perpage="{$usersPerPage}" total="{$totalUsers}" />
+
+]]></replace_value>
+    </modification>
+    <modification title="textarea" template_title="custom_field_edit" execute_order="10" modification_type="str_replace" callback_class="" callback_method="" description="" version_id="5" version_string="1.5" active="1">
+      <search_value><![CDATA[<textarea name="custom_fields[{$field.field_id}]" 
+				id="ctrl_custom_field_{$field.field_id}"
+				data-validatorname="custom_field_{$field.field_id}" 
+				class="textCtrl Elastic">{$field.field_value}</textarea>]]></search_value>
+      <replace_value><![CDATA[<textarea name="custom_fields[{$field.field_id}]" 
+				id="ctrl_custom_field_{$field.field_id}"
+				data-validatorname="custom_field_{$field.field_id}"
+		data-acurl="account/searchCity?type={$field.field_id}"
+		class="textCtrl Elastic AutoComplete">{$field.field_value}
+</textarea>]]></replace_value>
+    </modification>
+    <modification title="textbox" template_title="custom_field_edit" execute_order="10" modification_type="str_replace" callback_class="" callback_method="" description="add autocomplete" version_id="5" version_string="1.5" active="1">
+      <search_value><![CDATA[		<xen:if is="{$field.field_type} == 'textbox'">
+			<input type="text" name="custom_fields[{$field.field_id}]" value="{$field.field_value}" 
+				id="ctrl_custom_field_{$field.field_id}"
+				data-validatorname="custom_field_{$field.field_id}"
+				class="textCtrl" maxlength="{xen:if $field.max_length, $field.max_length}" 
+			/>]]></search_value>
+      <replace_value><![CDATA[		<xen:if is="{$field.field_type} == 'textbox'">
+			<input type="text" name="custom_fields[{$field.field_id}]" value="{$field.field_value}" 
+				id="ctrl_custom_field_{$field.field_id}"
+				data-validatorname="custom_field_{$field.field_id}"
+				class="textCtrl AutoComplete" maxlength="{xen:if $field.max_length, $field.max_length}
+data-acurl="account/searchCity?type={$field.field_id}"/>" ]]></replace_value>
+    </modification>
+  </template_modifications>
+  <brc_actions/>
+</addon>
