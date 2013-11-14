@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="baedc6bb-4712-4fd4-a79c-9047f8a97df5" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/upload/library/Akinak/CustomUserFieldSearch" afterPath="$PROJECT_DIR$/upload/library/Akinak/CustomUserFieldSearch" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Advanced Member Profile Search.iws" />
     <ignored path=".idea/workspace.xml" />
